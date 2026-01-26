@@ -6,6 +6,7 @@ enum USERTYPE {
 
 model User {
     id        String    @id @default(uuid())
+    name      String
     email     String    @unique
     password  String
     userType  USERTYPE
