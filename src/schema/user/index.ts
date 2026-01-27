@@ -6,6 +6,7 @@ const addressSchema = z.object({
 });
 
 const userSchema = z.object({
+  id: z.string(),
   name: z.string(),
   email: z.email(),
   password: z.string().min(8),
@@ -19,16 +20,25 @@ const registerUserSchema = userSchema.omit({
   address: true,
   createdAt: true,
   updatedAt: true,
+  id: true,
+});
+const loginUserSchema = userSchema.pick({
+  email: true,
+  password: true,
 });
 
 type REGISTER_USER = z.infer<typeof registerUserSchema>;
+type LOGIN_USER = z.infer<typeof loginUserSchema>;
+type REQUEST_USER = Omit<USER, "password">;
 
 type USER = z.infer<typeof userSchema>;
-type LOGIN_USER = Omit<USER, "createdAt" | "updatedAt" | "address" | "name">;
+
 export {
   userSchema,
   registerUserSchema,
+  loginUserSchema,
   type USER,
   type REGISTER_USER,
   type LOGIN_USER,
+  type REQUEST_USER,
 };

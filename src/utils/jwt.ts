@@ -1,24 +1,24 @@
-import { Response } from "express";
-import jwt, { JwtPayload, SignOptions } from "jsonwebtoken";
-
+import { JwtPayload, Secret, SignOptions } from "jsonwebtoken";
 import { config } from "../config/env";
-const {
-  jwt: { secret, expiresIn },
-} = config;
-export const generateToken = async (
-  res: Response,
-  { id, email }: { id: string; email: string },
-) => {
-  const payload = { id, email };
+import jwt from "jsonwebtoken";
+export function generateAccessToken(payload: JwtPayload): string {
   const signOptions: SignOptions = {
-    expiresIn: expiresIn!,
+    expiresIn: config.jwt.expiresIn!, // string or number
   };
+  return jwt.sign(payload, config.jwt.secret, signOptions);
+}
 
-  const token = jwt.sign(payload, secret!, signOptions);
-  res.cookie("access-token", token, {
-    httpOnly: true,
-    secure: true,
-    sameSite: "lax",
-  });
-  return token;
-};
+export function generateRefreshToken(payload: JwtPayload): string {
+  const signOptions: SignOptions = {
+    expiresIn: config.jwt.refreshExpiresIn!, // string or number
+  };
+  return jwt.sign(payload, config.jwt.refreshSecret as Secret, signOptions);
+}
+
+export function verifyAccessToken(token: string): JwtPayload {
+  return jwt.verify(token, config.jwt.secret) as JwtPayload;
+}
+
+export function verifyRefreshToken(token: string): JwtPayload {
+  return jwt.verify(token, config.jwt.refreshSecret) as JwtPayload;
+}
