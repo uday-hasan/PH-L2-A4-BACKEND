@@ -4,6 +4,10 @@ import cookieParser from "cookie-parser";
 import { API_PREFIX } from "./constant";
 import authRouter from "./modules/auth/auth.route";
 import { errorHandler } from "./middlewares/error.middleware";
+import {
+  authRateLimiter,
+  rateLimiter,
+} from "./middlewares/rateLimit.middleware";
 
 const app: Application = express();
 app.use(
@@ -15,6 +19,7 @@ app.use(
 app.use(express.json());
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
+app.use(rateLimiter);
 
 const routeName = (path: string) => `${API_PREFIX}/${path}`;
 
