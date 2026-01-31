@@ -36,5 +36,23 @@ class CategoryController {
       next(error);
     }
   }
+  async updateCategory(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { categoryId: id } = req.params;
+      const payload = createCategorySchema.partial().safeParse(req.body);
+      if (payload.error) {
+        next(payload.error);
+        return;
+      }
+      const category = await categoryService.updateCategory(id as string, {
+        name: req.body.name,
+        status: req.body.status,
+        description: req.body.description,
+      });
+      ResponseUtil.success(res, category, "Category updated successfully");
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 export default CategoryController;

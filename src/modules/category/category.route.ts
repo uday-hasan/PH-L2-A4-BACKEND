@@ -16,5 +16,12 @@ categoryRouter.post(
 );
 categoryRouter.get("/", rateLimiter, categoryController.getCategories);
 categoryRouter.get("/:categoryId", rateLimiter, categoryController.getCategory);
+categoryRouter.put(
+  "/:categoryId",
+  rateLimiter,
+  authenticate,
+  authorize(["ADMIN"]),
+  categoryController.updateCategory,
+);
 
 export default categoryRouter;

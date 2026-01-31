@@ -1,6 +1,7 @@
-model Category{
-    id String @id @default(uuid())
-    name String @unique
+model Category {
+    id          String     @id @default(uuid())
+    name        String     @unique
     description String?
-    medicine Medicine[]
+    medicine    Medicine[]
+    status      STATUS     @default(ACTIVE)
 }

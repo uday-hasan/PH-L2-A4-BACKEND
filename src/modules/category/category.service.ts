@@ -56,6 +56,36 @@ class CategoryService {
       );
     }
   }
+  async updateCategory(id: string, payload: CREATE_CATEGORY) {
+    try {
+      const category = await prisma.category.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!category) {
+        throw new ApiError(404, "Category not found");
+      }
+      const updatedCategory = await prisma.category.update({
+        where: { id },
+        data: {
+          name: payload?.name || category.name,
+          status: payload?.status || category.status,
+          description: payload?.description || category.description,
+        },
+      });
+      if (!updatedCategory) {
+        throw new ApiError(400, "Failed to update category");
+      }
+      return updatedCategory;
+    } catch (error) {
+      throw new ApiError(
+        500,
+        error instanceof Error ? error.message : "Internal server error",
+        error,
+      );
+    }
+  }
 }
 
 export default CategoryService;
