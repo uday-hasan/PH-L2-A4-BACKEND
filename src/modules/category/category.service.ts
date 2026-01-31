@@ -25,6 +25,37 @@ class CategoryService {
       );
     }
   }
+  async getCategories() {
+    try {
+      const categories = await prisma.category.findMany();
+      return categories;
+    } catch (error) {
+      throw new ApiError(
+        500,
+        error instanceof Error ? error.message : "Internal server error",
+        error,
+      );
+    }
+  }
+  async getCategory(id: string) {
+    try {
+      const category = await prisma.category.findUnique({
+        where: {
+          id,
+        },
+      });
+      if (!category) {
+        throw new ApiError(404, "Category not found");
+      }
+      return category;
+    } catch (error) {
+      throw new ApiError(
+        500,
+        error instanceof Error ? error.message : "Internal server error",
+        error,
+      );
+    }
+  }
 }
 
 export default CategoryService;
