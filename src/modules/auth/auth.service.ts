@@ -2,6 +2,7 @@ import { LOGIN_USER, REGISTER_USER } from "../../schema/user";
 import { ApiError } from "../../utils/api-error";
 import { prisma } from "../../utils/db";
 import { comparePassword, hashPassword } from "../../utils/hashing";
+import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 
 class AuthService {
   async registerUser(payload: REGISTER_USER) {
@@ -56,6 +57,29 @@ class AuthService {
         error instanceof Error ? error.message : "Internal server error",
         error,
       );
+    }
+  }
+  async refreshToken(refreshToken: string) {
+    try {
+      const payload = verifyRefreshToken(refreshToken);
+
+      const user = await prisma.user.findUnique({
+        where: { id: payload.id },
+      });
+
+      if (!user) {
+        throw new ApiError(401, "User not found");
+      }
+
+      const newAccessToken = generateAccessToken({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      });
+
+      return { accessToken: newAccessToken };
+    } catch (error) {
+      throw new ApiError(401, "Invalid refresh token");
     }
   }
 }

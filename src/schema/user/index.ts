@@ -29,7 +29,7 @@ const loginUserSchema = userSchema.pick({
 
 type REGISTER_USER = z.infer<typeof registerUserSchema>;
 type LOGIN_USER = z.infer<typeof loginUserSchema>;
-type REQUEST_USER = Omit<USER, "password">;
+type REQUEST_USER = Omit<USER, "password" | "address">;
 
 type USER = z.infer<typeof userSchema>;
 

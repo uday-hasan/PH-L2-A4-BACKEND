@@ -8,6 +8,7 @@ import {
   authRateLimiter,
   rateLimiter,
 } from "./middlewares/rateLimit.middleware";
+import medicineRouter from "./modules/medicine/medicine.route";
 
 const app: Application = express();
 app.use(
@@ -28,6 +29,7 @@ app.get(routeName("/health"), (_req: Request, res: Response) => {
 });
 
 app.use(routeName("auth"), authRouter);
+app.use(routeName("medicine"), medicineRouter);
 
 app.use(errorHandler);
 export default app;

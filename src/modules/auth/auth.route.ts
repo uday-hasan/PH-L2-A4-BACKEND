@@ -4,7 +4,9 @@ import { authRateLimiter } from "../../middlewares/rateLimit.middleware";
 
 const authRouter = Router();
 const authController = new AuthController();
+
 authRouter.post("/register", authRateLimiter, authController.registerUser);
 authRouter.post("/login", authRateLimiter, authController.loginUser);
+authRouter.post("/refresh", authController.refresh);
 
 export default authRouter;

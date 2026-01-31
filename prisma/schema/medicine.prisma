@@ -1,0 +1,20 @@
+model Medicine {
+  id                 String   @id @default(uuid())
+  name               String   @unique
+  description        String
+  category_id        String
+  category           Category @relation(fields: [category_id], references: [id])
+  seller_id          String
+  seller             User     @relation(fields: [seller_id], references: [id])
+  selling_price      Float
+  purchase_price     Float
+  status             STATUS   @default(ACTIVE)
+  available_quantity Int
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+enum STATUS {
+  ACTIVE
+  INACTIVE
+}

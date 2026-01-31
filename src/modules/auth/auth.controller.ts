@@ -43,6 +43,8 @@ class AuthController {
         userType: result.userType,
       });
 
+      req.user = result;
+
       res.cookie("accessToken", accessToken, {
         httpOnly: true,
         secure: true,
@@ -60,6 +62,30 @@ class AuthController {
       next(error);
     }
   }
+  refresh = async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      const refreshToken = req.cookies.refreshToken;
+
+      if (!refreshToken) {
+        ResponseUtil.error(res, "Refresh token required", 401);
+        return;
+      }
+
+      const result = await authService.refreshToken(refreshToken);
+
+      res.cookie("accessToken", result.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "strict",
+        maxAge: 15 * 60 * 1000,
+      });
+
+      ResponseUtil.success(res, null, "Token refreshed successfully");
+      return;
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 export default AuthController;
