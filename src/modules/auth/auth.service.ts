@@ -62,24 +62,21 @@ class AuthService {
   async refreshToken(refreshToken: string) {
     try {
       const payload = verifyRefreshToken(refreshToken);
-
       const user = await prisma.user.findUnique({
-        where: { id: payload.id },
+        where: { id: payload.userId },
       });
 
       if (!user) {
         throw new ApiError(401, "User not found");
       }
-
       const newAccessToken = generateAccessToken({
-        id: user.id,
-        email: user.email,
-        name: user.name,
+        userId: user.id,
+        userType: user.userType,
       });
 
       return { accessToken: newAccessToken };
     } catch (error) {
-      throw new ApiError(401, "Invalid refresh token");
+      throw new ApiError(401, "Session expired or invalid token");
     }
   }
 }

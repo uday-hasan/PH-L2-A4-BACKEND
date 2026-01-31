@@ -15,4 +15,7 @@ model User {
     updatedAt DateTime   @updatedAt
     medicine  Medicine[]
     status    STATUS     @default(ACTIVE)
+    orders    Order[]    @relation("CustomerOrders")
+    reviews   Review[]
+    cart      Cart?
 }

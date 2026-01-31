@@ -13,7 +13,12 @@ class UserService {
     }
     try {
       const users = await prisma.user.findMany({
-        where: whereCondition,
+        where: {
+          ...whereCondition,
+          userType: {
+            not: "ADMIN",
+          },
+        },
         omit: {
           password: true,
         },

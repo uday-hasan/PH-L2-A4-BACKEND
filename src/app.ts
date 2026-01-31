@@ -11,6 +11,8 @@ import {
 import medicineRouter from "./modules/medicine/medicine.route";
 import categoryRouter from "./modules/category/category.route";
 import userRouter from "./modules/user/user.route";
+import orderRouter from "./modules/order/order.route";
+import cartRouter from "./modules/cart/cart.route";
 
 const app: Application = express();
 app.use(
@@ -34,6 +36,8 @@ app.use(routeName("auth"), authRouter);
 app.use(routeName("medicine"), medicineRouter);
 app.use(routeName("category"), categoryRouter);
 app.use(routeName("users"), userRouter);
+app.use(routeName("orders"), orderRouter);
+app.use(routeName("cart"), cartRouter);
 
 app.use(errorHandler);
 export default app;
