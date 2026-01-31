@@ -10,6 +10,7 @@ import {
 } from "./middlewares/rateLimit.middleware";
 import medicineRouter from "./modules/medicine/medicine.route";
 import categoryRouter from "./modules/category/category.route";
+import userRouter from "./modules/user/user.route";
 
 const app: Application = express();
 app.use(
@@ -32,6 +33,7 @@ app.get(routeName("/health"), (_req: Request, res: Response) => {
 app.use(routeName("auth"), authRouter);
 app.use(routeName("medicine"), medicineRouter);
 app.use(routeName("category"), categoryRouter);
+app.use(routeName("users"), userRouter);
 
 app.use(errorHandler);
 export default app;

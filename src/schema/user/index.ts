@@ -14,6 +14,7 @@ const userSchema = z.object({
   address: z.array(addressSchema),
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
+  status: z.enum(["ACTIVE", "INACTIVE"]),
 });
 
 const registerUserSchema = userSchema.omit({

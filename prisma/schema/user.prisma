@@ -5,13 +5,14 @@ enum USERTYPE {
 }
 
 model User {
-    id        String    @id @default(uuid())
+    id        String     @id @default(uuid())
     name      String
-    email     String    @unique
+    email     String     @unique
     password  String
     userType  USERTYPE
     address   Address[]
-    createdAt DateTime  @default(now())
-    updatedAt DateTime  @updatedAt
-    medicine Medicine[]
+    createdAt DateTime   @default(now())
+    updatedAt DateTime   @updatedAt
+    medicine  Medicine[]
+    status    STATUS     @default(ACTIVE)
 }
