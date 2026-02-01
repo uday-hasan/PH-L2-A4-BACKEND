@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "status" "STATUS" NOT NULL DEFAULT 'ACTIVE';

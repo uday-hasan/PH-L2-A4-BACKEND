@@ -21,8 +21,12 @@ class CategoryController {
   }
   async getCategories(req: Request, res: Response, next: NextFunction) {
     try {
-      const categories = await categoryService.getCategories();
-      ResponseUtil.success(res, categories, "Categories fetched successfully");
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 8;
+      const search = (req.query.search as string) || "";
+
+      const result = await categoryService.getCategories(page, limit, search);
+      ResponseUtil.success(res, result, "Categories fetched successfully");
     } catch (error) {
       next(error);
     }

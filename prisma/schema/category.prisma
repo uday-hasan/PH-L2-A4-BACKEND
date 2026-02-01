@@ -1,7 +1,9 @@
 model Category {
-    id          String     @id @default(uuid())
-    name        String     @unique
-    description String?
-    medicine    Medicine[]
-    status      STATUS     @default(ACTIVE)
+  id          String     @id @default(uuid())
+  name        String     @unique
+  description String?
+  status      STATUS     @default(ACTIVE)
+  createdAt   DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt   DateTime   @default(now()) @updatedAt @db.Timestamptz(6)
+  medicine    Medicine[]
 }

@@ -25,16 +25,41 @@ class CategoryService {
       );
     }
   }
-  async getCategories() {
+  // category.service.ts
+  async getCategories(
+    page: number = 1,
+    limit: number = 8,
+    search: string = "",
+  ) {
     try {
-      const categories = await prisma.category.findMany();
-      return categories;
+      const skip = (page - 1) * limit;
+
+      // Search filter
+      const where = search
+        ? { name: { contains: search, mode: "insensitive" as any } }
+        : {};
+
+      const [total, categories] = await Promise.all([
+        prisma.category.count({ where }),
+        prisma.category.findMany({
+          where,
+          skip,
+          take: limit,
+          orderBy: { createdAt: "desc" },
+        }),
+      ]);
+
+      return {
+        categories,
+        meta: {
+          total,
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
+        },
+      };
     } catch (error) {
-      throw new ApiError(
-        500,
-        error instanceof Error ? error.message : "Internal server error",
-        error,
-      );
+      throw new ApiError(500, "Failed to fetch categories");
     }
   }
   async getCategory(id: string) {

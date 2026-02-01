@@ -3,18 +3,18 @@ model Medicine {
   name               String      @unique
   description        String
   category_id        String
-  category           Category    @relation(fields: [category_id], references: [id])
   seller_id          String
-  seller             User        @relation(fields: [seller_id], references: [id])
   selling_price      Float
   purchase_price     Float
-  status             STATUS      @default(ACTIVE)
   available_quantity Int
   createdAt          DateTime    @default(now())
   updatedAt          DateTime    @updatedAt
+  status             STATUS      @default(ACTIVE)
+  cartItems          CartItem[]
+  category           Category    @relation(fields: [category_id], references: [id])
+  seller             User        @relation(fields: [seller_id], references: [id])
   orderItems         OrderItem[]
   reviews            Review[]
-  cartItems          CartItem[]
 }
 
 enum STATUS {

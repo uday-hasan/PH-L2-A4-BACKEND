@@ -1,6 +1,6 @@
 model Address {
-    id      String @id @default(uuid())
-    userId  String
-    user    User   @relation(fields: [userId], references: [id])
-    address String
+  id      String @id @default(uuid())
+  userId  String
+  address String
+  user    User   @relation(fields: [userId], references: [id])
 }
