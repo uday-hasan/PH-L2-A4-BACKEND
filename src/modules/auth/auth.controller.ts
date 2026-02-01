@@ -7,6 +7,7 @@ import {
 import AuthService from "./auth.service";
 import { ResponseUtil } from "../../utils/response.util";
 import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
+import { getCookieOptions } from "../../utils/cookie-config";
 
 const authService = new AuthService();
 class AuthController {
@@ -46,16 +47,18 @@ class AuthController {
       req.user = result;
 
       res.cookie("accessToken", accessToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: 15 * 60 * 1000, // 15 minutes
+        ...getCookieOptions(),
+        maxAge: 15 * 60 * 1000,
       });
       res.cookie("refreshToken", refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "strict",
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+        ...getCookieOptions(),
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      res.cookie("userRole", result.userType, {
+        ...getCookieOptions(),
+        httpOnly: false,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
       return ResponseUtil.success(res, result, "User logged in successfully");
     } catch (error) {
@@ -86,6 +89,33 @@ class AuthController {
       next(error);
     }
   };
+  async getMe(req: Request, res: Response, next: NextFunction) {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        ResponseUtil.error(res, "User ID not found", 401);
+        return;
+      }
+      const result = await authService.getMe(userId);
+      return ResponseUtil.success(
+        res,
+        result,
+        "User details retrieved successfully",
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
+  async logout(req: Request, res: Response, next: NextFunction) {
+    try {
+      res.clearCookie("accessToken");
+      res.clearCookie("refreshToken");
+      res.clearCookie("userRole");
+      return ResponseUtil.success(res, null, "User logged out successfully");
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default AuthController;

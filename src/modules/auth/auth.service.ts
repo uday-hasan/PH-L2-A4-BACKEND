@@ -53,7 +53,7 @@ class AuthService {
       return user;
     } catch (error) {
       throw new ApiError(
-        500,
+        error instanceof ApiError ? error.statusCode : 500,
         error instanceof Error ? error.message : "Internal server error",
         error,
       );
@@ -77,6 +77,30 @@ class AuthService {
       return { accessToken: newAccessToken };
     } catch (error) {
       throw new ApiError(401, "Session expired or invalid token");
+    }
+  }
+
+  async getMe(userId: string) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: {
+          id: userId,
+        },
+        omit: {
+          password: true,
+        },
+      });
+
+      if (!user) {
+        throw new ApiError(404, "User not found");
+      }
+      return user;
+    } catch (error) {
+      throw new ApiError(
+        500,
+        error instanceof Error ? error.message : "Internal server error",
+        error,
+      );
     }
   }
 }

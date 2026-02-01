@@ -14,7 +14,7 @@ export class ResponseUtil {
   static error(res: Response, error: string, statusCode = 400) {
     const response: ApiResponse = {
       success: false,
-      error,
+      message: error,
     };
     return res.status(statusCode).json(response);
   }
