@@ -11,12 +11,20 @@ import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
 
 const authService = new AuthService();
 class USERController {
+  // user.controller.ts
   async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 8;
+      const search = (req.query.search as string) || "";
       const status = req.query.status as "ACTIVE" | "INACTIVE" | undefined;
-      const statusObj = status ? { status } : {};
-      const result = await authService.getUsers(statusObj);
 
+      const result = await authService.getUsers({
+        status,
+        page,
+        limit,
+        search,
+      });
       return ResponseUtil.success(res, result, "Users fetched successfully");
     } catch (error) {
       next(error);
