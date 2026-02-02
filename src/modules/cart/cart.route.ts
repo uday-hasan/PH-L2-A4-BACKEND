@@ -24,4 +24,11 @@ cartRouter.delete(
   cartController.removeItem,
 );
 
+cartRouter.patch(
+  "/item/:itemId",
+  authenticate,
+  authorize(["CUSTOMER"]),
+  cartController.updateQuantity,
+);
+
 export default cartRouter;

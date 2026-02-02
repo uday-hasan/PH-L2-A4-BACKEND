@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import CartService from "./cart.service";
 import { ResponseUtil } from "../../utils/response.util";
 import { addToCartSchema } from "../../schema/cart";
+import { ApiError } from "../../utils/api-error";
 
 const cartService = new CartService();
 
@@ -38,6 +39,25 @@ class CartController {
       const { itemId } = req.params as { itemId: string };
       await cartService.removeItem(itemId);
       ResponseUtil.success(res, null, "Item removed from cart");
+    } catch (error) {
+      next(error);
+    }
+  }
+  // cart.controller.ts
+  async updateQuantity(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { itemId } = req.params;
+      const { quantity } = req.body;
+
+      if (!quantity || quantity < 1) {
+        throw new ApiError(400, "Quantity must be at least 1");
+      }
+
+      const result = await cartService.updateItemQuantity(
+        itemId as string,
+        quantity,
+      );
+      return ResponseUtil.success(res, result, "Cart updated successfully");
     } catch (error) {
       next(error);
     }

@@ -59,6 +59,26 @@ class CartService {
       await prisma.cartItem.deleteMany({ where: { cartId: cart.id } });
     }
   }
+  async updateItemQuantity(cartItemId: string, quantity: number) {
+    const cartItem = await prisma.cartItem.findUnique({
+      where: { id: cartItemId },
+      include: { medicine: true },
+    });
+
+    if (!cartItem) throw new ApiError(404, "Item not found in cart");
+    if (quantity > cartItem.medicine.available_quantity) {
+      throw new ApiError(
+        400,
+        `Only ${cartItem.medicine.available_quantity} units available`,
+      );
+    }
+
+    return await prisma.cartItem.update({
+      where: { id: cartItemId },
+      data: { quantity },
+      include: { medicine: true },
+    });
+  }
 }
 
 export default CartService;
