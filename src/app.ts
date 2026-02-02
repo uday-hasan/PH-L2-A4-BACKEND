@@ -4,21 +4,19 @@ import cookieParser from "cookie-parser";
 import { API_PREFIX } from "./constant";
 import authRouter from "./modules/auth/auth.route";
 import { errorHandler } from "./middlewares/error.middleware";
-import {
-  authRateLimiter,
-  rateLimiter,
-} from "./middlewares/rateLimit.middleware";
+import { rateLimiter } from "./middlewares/rateLimit.middleware";
 import medicineRouter from "./modules/medicine/medicine.route";
 import categoryRouter from "./modules/category/category.route";
 import userRouter from "./modules/user/user.route";
 import orderRouter from "./modules/order/order.route";
 import cartRouter from "./modules/cart/cart.route";
 import reviewRouter from "./modules/review/review.router";
+import { config } from "./config/env";
 
 const app: Application = express();
 app.use(
   cors({
-    origin: ["http://localhost:3000"],
+    origin: config.cors.origin,
     credentials: true,
   }),
 );

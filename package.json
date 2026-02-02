@@ -6,7 +6,6 @@
   "scripts": {
     "build": "prisma generate && tsc",
     "dev": "tsx watch src/server.ts",
-    "start": "node dist/server.js",
     "vercel-build": "prisma generate && tsc"
   },
   "keywords": [],

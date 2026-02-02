@@ -5,14 +5,14 @@ import { prisma } from "../utils/db";
 
 async function main() {
   console.log("🚀 Cleaning up database...");
-  await prisma.review.deleteMany();
-  await prisma.orderItem.deleteMany();
-  await prisma.order.deleteMany();
-  await prisma.cartItem.deleteMany();
-  await prisma.cart.deleteMany();
-  await prisma.medicine.deleteMany();
-  await prisma.category.deleteMany();
-  await prisma.user.deleteMany();
+  // await prisma.review.deleteMany();
+  // await prisma.orderItem.deleteMany();
+  // await prisma.order.deleteMany();
+  // await prisma.cartItem.deleteMany();
+  // await prisma.cart.deleteMany();
+  // await prisma.medicine.deleteMany();
+  // await prisma.category.deleteMany();
+  // await prisma.user.deleteMany();
 
   console.log("🚀 Initializing deep seed...");
 
