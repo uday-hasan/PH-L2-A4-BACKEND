@@ -1,5 +1,6 @@
+import { User } from "../../generated/prisma/client";
 import { CREATE_MEDICINE } from "../../schema/medicine";
-import { LOGIN_USER, REGISTER_USER } from "../../schema/user";
+import { LOGIN_USER, REGISTER_USER, REQUEST_USER } from "../../schema/user";
 import { ApiError } from "../../utils/api-error";
 import { prisma } from "../../utils/db";
 import { comparePassword, hashPassword } from "../../utils/hashing";
@@ -62,33 +63,89 @@ class MedicineService {
     }
   }
 
-  async getMedicines() {
-    try {
-      const medicines = await prisma.medicine.findMany({
-        where: { status: "ACTIVE" },
+  async getPrivateMedicines(params: {
+    user: REQUEST_USER | undefined;
+    status?: "ACTIVE" | "INACTIVE" | undefined;
+    search?: string;
+    category_id?: string;
+    page: number;
+    limit: number;
+  }) {
+    const { user, status, search, category_id, page, limit } = params;
+    const skip = (page - 1) * limit;
+    console.log(user);
+    const where: any = {
+      ...(user?.userType === "SELLER" && { seller_id: user.id }),
+      ...(status && { status }),
+      ...(category_id && { category_id }),
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+        ],
+      }),
+    };
+
+    const [total, medicines] = await Promise.all([
+      prisma.medicine.count({ where }),
+      prisma.medicine.findMany({
+        where,
+        skip,
+        take: limit,
         include: {
-          seller: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-              userType: true,
-            },
-          },
           category: true,
+          seller: { select: { name: true, email: true } },
         },
-      });
-      if (!medicines) {
-        throw new ApiError(400, "Medicine retrieval failed");
-      }
-      return medicines;
-    } catch (error) {
-      throw new ApiError(
-        500,
-        error instanceof Error ? error.message : "Internal server error",
-        error,
-      );
-    }
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    return {
+      medicines,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+  async getMedicines(params: {
+    seller_id?: string | undefined;
+    status?: "ACTIVE" | "INACTIVE" | undefined;
+    search?: string;
+    category_id?: string;
+    page: number;
+    limit: number;
+  }) {
+    const { seller_id, status, search, category_id, page, limit } = params;
+    const skip = (page - 1) * limit;
+
+    const where: any = {
+      ...(seller_id && { seller_id }),
+      ...(status && { status }),
+      ...(category_id && { category_id }),
+      ...(search && {
+        OR: [
+          { name: { contains: search, mode: "insensitive" } },
+          { description: { contains: search, mode: "insensitive" } },
+        ],
+      }),
+    };
+
+    const [total, medicines] = await Promise.all([
+      prisma.medicine.count({ where }),
+      prisma.medicine.findMany({
+        where,
+        skip,
+        take: limit,
+        include: {
+          category: true,
+          seller: { select: { name: true, email: true } },
+        },
+        orderBy: { createdAt: "desc" },
+      }),
+    ]);
+
+    return {
+      medicines,
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
   }
   async getMedicine(medicine_id: string) {
     try {

@@ -21,6 +21,13 @@ medicineRouter.post(
   medicineController.addMedicine,
 );
 medicineRouter.get("/", rateLimiter, medicineController.getMedicines);
+medicineRouter.get(
+  "/private",
+  rateLimiter,
+  authenticate,
+  authorize(["ADMIN", "SELLER"]),
+  medicineController.getPrivateMedicines,
+);
 medicineRouter.get("/:medicineId", rateLimiter, medicineController.getMedicine);
 medicineRouter.put(
   "/:medicineId",

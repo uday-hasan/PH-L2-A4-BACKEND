@@ -10,6 +10,7 @@ import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
 import MedicineService from "./medicine.service";
 import { createMedicineSchema } from "../../schema/medicine";
 import { ApiError } from "../../utils/api-error";
+import { logger } from "../../utils/logger";
 
 const medicineService = new MedicineService();
 class MedicineController {
@@ -38,14 +39,50 @@ class MedicineController {
     }
   }
 
+  async getPrivateMedicines(req: Request, res: Response, next: NextFunction) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 8;
+      const search = req.query.search as string;
+      const category_id = req.query.category_id as string;
+      const user = req?.user;
+
+      const status =
+        (req.query.status as string) || (req.user ? undefined : "ACTIVE");
+
+      const result = await medicineService.getPrivateMedicines({
+        user,
+        status: status as "ACTIVE" | "INACTIVE" | undefined,
+        search,
+        category_id,
+        page,
+        limit,
+      });
+      return ResponseUtil.success(res, result, "Fetched successfully");
+    } catch (error) {
+      next(error);
+    }
+  }
   async getMedicines(req: Request, res: Response, next: NextFunction) {
     try {
-      const result = await medicineService.getMedicines();
-      return ResponseUtil.success(
-        res,
-        result,
-        "Medicines fetched successfully",
-      );
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 8;
+      const search = req.query.search as string;
+      const category_id = req.query.category_id as string;
+      const seller_id = (req.query?.seller as string) || undefined;
+
+      const status =
+        (req.query.status as string) || (req.user ? undefined : "ACTIVE");
+
+      const result = await medicineService.getMedicines({
+        seller_id,
+        status: status as "ACTIVE" | "INACTIVE" | undefined,
+        search,
+        category_id,
+        page,
+        limit,
+      });
+      return ResponseUtil.success(res, result, "Fetched successfully");
     } catch (error) {
       next(error);
     }
