@@ -1,9 +1,20 @@
-import { STATUS, USERTYPE } from "../generated/prisma/enums";
-import { prisma } from "../utils/db";
 import bcrypt from "bcryptjs";
+import { ORDER_STATUS, STATUS, USERTYPE } from "../generated/prisma/enums";
+import { Category, Medicine, Prisma, User } from "../generated/prisma/client";
+import { prisma } from "../utils/db";
 
 async function main() {
-  console.log("🚀 Start heavy seeding...");
+  console.log("🚀 Cleaning up database...");
+  await prisma.review.deleteMany();
+  await prisma.orderItem.deleteMany();
+  await prisma.order.deleteMany();
+  await prisma.cartItem.deleteMany();
+  await prisma.cart.deleteMany();
+  await prisma.medicine.deleteMany();
+  await prisma.category.deleteMany();
+  await prisma.user.deleteMany();
+
+  console.log("🚀 Initializing deep seed...");
 
   const hashedPassword = await bcrypt.hash("password123", 10);
 
@@ -14,181 +25,217 @@ async function main() {
     create: {
       email: "admin@medicare.com",
       password: hashedPassword,
-      name: "System Admin",
+      name: "System Administrator",
       userType: USERTYPE.ADMIN,
     },
   });
 
-  // 2. Create 3 Sellers
-  const sellersData = [
-    { email: "seller1@medicare.com", name: "MediCare Central Pharmacy" },
-    { email: "seller2@medicare.com", name: "HealthPlus Solutions" },
-    { email: "seller3@medicare.com", name: "Wellness Pharma" },
+  // 2. Create 10 Categories
+  const categoryNames = [
+    "Neurology",
+    "Cardiology",
+    "Dermatology",
+    "Gastroenterology",
+    "Pediatrics",
+    "Respiratory",
+    "Orthopedics",
+    "Oncology",
+    "General Medicine",
+    "Vitamins & Supplements",
   ];
 
-  const sellers = [];
-  for (const s of sellersData) {
-    const seller = await prisma.user.upsert({
-      where: { email: s.email },
-      update: {},
-      create: {
-        email: s.email,
+  const categories: Category[] = [];
+  for (const name of categoryNames) {
+    const cat = await prisma.category.create({
+      data: {
+        name,
+        description: `Specialized medicine and equipment for ${name}`,
+        status: STATUS.ACTIVE,
+      },
+    });
+    categories.push(cat);
+  }
+
+  // 3. Create 5 Sellers
+  const sellers: User[] = [];
+  for (let i = 1; i <= 5; i++) {
+    const seller = await prisma.user.create({
+      data: {
+        email: `seller${i}@pharmacy.com`,
         password: hashedPassword,
-        name: s.name,
+        name: `HealthPort Pharmacy ${i}`,
         userType: USERTYPE.SELLER,
       },
     });
     sellers.push(seller);
   }
 
-  // 3. Create 10 Customers
-  const customerNames = [
-    "Alice Johnson",
-    "Bob Smith",
-    "Charlie Brown",
-    "Diana Prince",
-    "Ethan Hunt",
-    "Fiona Gallagher",
-    "George Miller",
-    "Hannah Abbott",
-    "Ian Wright",
-    "Julia Roberts",
+  // 4. Create Medicines per Seller
+  const medicineNames = [
+    "Lipitor",
+    "Nexium",
+    "Plavix",
+    "Advair",
+    "Abilify",
+    "Seroquel",
+    "Singulair",
+    "Crestor",
+    "Actos",
+    "Epogen",
+    "Amoxicillin",
+    "Ciprofloxacin",
+    "Metformin",
+    "Atorvastatin",
+    "Lisinopril",
+    "Levothyroxine",
+    "Gabapentin",
+    "Amlodipine",
+    "Omeprazole",
+    "Losartan",
+    "Albuterol",
+    "Metoprolol",
+    "Pantoprazole",
+    "Sertraline",
+    "Valacyclovir",
   ];
-  const customers = [];
-  for (const name of customerNames) {
-    const email = `${name.toLowerCase().replace(" ", ".")}@example.com`;
-    const customer = await prisma.user.upsert({
-      where: { email },
-      update: {},
-      create: {
-        email,
+
+  const allMedicines: Medicine[] = [];
+  for (const seller of sellers) {
+    const medicineCount = Math.floor(Math.random() * 6) + 10;
+    for (let i = 0; i < medicineCount; i++) {
+      const baseName =
+        medicineNames[Math.floor(Math.random() * medicineNames.length)];
+      // FIX: Added ! to ensure categories access is not undefined
+      const randomCategory =
+        categories[Math.floor(Math.random() * categories.length)]!;
+
+      const med = await prisma.medicine.create({
+        data: {
+          name: `${baseName} ${Math.floor(Math.random() * 500) + 50}mg - ${seller.id.slice(0, 4)}`,
+          description: `High quality generic formulation of ${baseName}. FDA approved laboratory tested.`,
+          selling_price: Number((Math.random() * 50 + 5).toFixed(2)),
+          purchase_price: Number((Math.random() * 5 + 2).toFixed(2)),
+          available_quantity: Math.floor(Math.random() * 200) + 10,
+          status: STATUS.ACTIVE,
+          seller_id: seller.id,
+          category_id: randomCategory.id,
+        },
+      });
+      allMedicines.push(med);
+    }
+  }
+
+  // 5. Create 10 Customers
+  const customers: User[] = [];
+  for (let i = 1; i <= 10; i++) {
+    const customer = await prisma.user.create({
+      data: {
+        email: `customer${i}@gmail.com`,
         password: hashedPassword,
-        name,
+        name: `Customer Name ${i}`,
         userType: USERTYPE.CUSTOMER,
       },
     });
     customers.push(customer);
   }
 
-  // 4. Create 20 Categories
-  const categoriesData = [
-    "Pain Relief",
-    "Vitamins",
-    "Antibiotics",
-    "Digestive Health",
-    "Allergy",
-    "Cold & Flu",
-    "Baby Care",
-    "Eye Care",
-    "Herbal",
-    "Medical Devices",
-    "Cardiac",
-    "Diabetic Care",
-    "Orthopedic",
-    "Skin Care",
-    "Oral Care",
-    "First Aid",
-    "Men's Health",
-    "Women's Health",
-    "Mental Health",
-    "Respiratory",
+  // 6. Create Carts and Orders
+  const orderStatuses: ORDER_STATUS[] = [
+    ORDER_STATUS.PENDING,
+    ORDER_STATUS.SHIPPED,
+    ORDER_STATUS.DELIVERED,
+    ORDER_STATUS.CANCELLED,
   ];
 
-  const categoryMap: any = {};
-  for (const catName of categoriesData) {
-    const cat = await prisma.category.upsert({
-      where: { name: catName },
-      update: {},
-      create: {
-        name: catName,
-        description: `Quality products for ${catName}`,
-        status: STATUS.ACTIVE,
-      },
-    });
-    categoryMap[catName] = cat;
-  }
-
-  // 5. Create 20+ Medicines
-  const medicines = [
-    { name: "Paracetamol 500mg", cat: "Pain Relief", price: 5.5, qty: 100 },
-    { name: "Amoxicillin 250mg", cat: "Antibiotics", price: 12.99, qty: 50 },
-    { name: "Vitamin C 1000mg", cat: "Vitamins", price: 8.0, qty: 200 },
-    { name: "Omeprazole 20mg", cat: "Digestive Health", price: 15.0, qty: 15 }, // Low Stock
-    { name: "Cetirizine 10mg", cat: "Allergy", price: 7.25, qty: 80 },
-    { name: "Napa Extend", cat: "Pain Relief", price: 3.5, qty: 0 }, // Out of Stock
-    { name: "Metformin 500mg", cat: "Diabetic Care", price: 10.0, qty: 120 },
-    { name: "Atorvastatin 10mg", cat: "Cardiac", price: 25.5, qty: 45 },
-    { name: "Salbutamol Inhaler", cat: "Respiratory", price: 18.0, qty: 30 },
-    { name: "Amlodipine 5mg", cat: "Cardiac", price: 14.2, qty: 60 },
-    { name: "Insulin Pen", cat: "Diabetic Care", price: 45.0, qty: 10 }, // Low Stock
-    { name: "Gaviscon Liquid", cat: "Digestive Health", price: 9.5, qty: 40 },
-    { name: "Loratadine 10mg", cat: "Allergy", price: 6.8, qty: 100 },
-    { name: "Baby Diaper Rash Cream", cat: "Baby Care", price: 11.0, qty: 25 },
-    { name: "Eye Drops Lubricant", cat: "Eye Care", price: 13.5, qty: 55 },
-    { name: "Ashwagandha Extract", cat: "Herbal", price: 22.0, qty: 35 },
-    {
-      name: "Digital Thermometer",
-      cat: "Medical Devices",
-      price: 19.99,
-      qty: 100,
-    },
-    { name: "Knee Brace", cat: "Orthopedic", price: 35.0, qty: 20 },
-    { name: "Sunscreen SPF 50", cat: "Skin Care", price: 28.0, qty: 40 },
-    { name: "Antiseptic Dettol", cat: "First Aid", price: 4.5, qty: 150 },
-    { name: "Multivitamin Gold", cat: "Vitamins", price: 30.0, qty: 90 },
-    { name: "Calcium + D3", cat: "Vitamins", price: 16.0, qty: 75 },
-  ];
-
-  const reviewComments = [
-    "Excellent product, helped me a lot!",
-    "Great quality, fast delivery.",
-    "Decent, but the packaging could be better.",
-    "Life saver! Highly recommended.",
-    "Value for money.",
-    "Will buy again.",
-    "Not very effective for me, but okay.",
-  ];
-
-  for (const m of medicines) {
-    const randomSeller = sellers[Math.floor(Math.random() * sellers.length)];
-
-    const med = await prisma.medicine.upsert({
-      where: { name: m.name },
-      update: {},
-      create: {
-        name: m.name,
-        description: `This is a high-quality ${m.name} for ${m.cat}. Trusted by professionals.`,
-        selling_price: m.price,
-        purchase_price: m.price * 0.7,
-        available_quantity: m.qty,
-        status: STATUS.ACTIVE,
-        seller_id: randomSeller?.id!,
-        category_id: categoryMap[m.cat].id,
-      },
-    });
-
-    // 6. Create Random Reviews (3-6 reviews per medicine)
-    const numReviews = Math.floor(Math.random() * 4) + 3;
-    const shuffledCustomers = [...customers].sort(() => 0.5 - Math.random());
-
-    for (let i = 0; i < numReviews; i++) {
-      await prisma.review.create({
-        data: {
-          rating: Math.floor(Math.random() * 2) + 4, // Mostly 4 and 5 stars for positive UI
-          comment:
-            reviewComments[Math.floor(Math.random() * reviewComments.length)] ||
-            "",
-          userId: shuffledCustomers[i]?.id!, // Linked to the renamed 'user' relation
-          medicineId: med.id,
-          createdAt: new Date(
-            Date.now() - Math.floor(Math.random() * 10000000000),
+  for (const customer of customers) {
+    // Create Cart
+    await prisma.cart.create({
+      data: {
+        customerId: customer.id,
+        items: {
+          create: Array.from({ length: Math.floor(Math.random() * 3) + 1 }).map(
+            () => ({
+              // FIX: Added ! assertion
+              medicineId:
+                allMedicines[Math.floor(Math.random() * allMedicines.length)]!
+                  .id,
+              quantity: Math.floor(Math.random() * 5) + 1,
+            }),
           ),
+        },
+      },
+    });
+
+    // Create 2-6 Orders
+    const orderCount = Math.floor(Math.random() * 5) + 2;
+    for (let j = 0; j < orderCount; j++) {
+      // Create specific OrderItem type
+      const itemsToCreate: Prisma.OrderItemUncheckedCreateWithoutOrderInput[] =
+        Array.from({ length: Math.floor(Math.random() * 4) + 1 }).map(() => {
+          const med =
+            allMedicines[Math.floor(Math.random() * allMedicines.length)]!;
+          return {
+            medicineId: med.id,
+            quantity: Math.floor(Math.random() * 3) + 1,
+            price: med.selling_price,
+            // FIX: Added ! assertion
+            status:
+              orderStatuses[Math.floor(Math.random() * orderStatuses.length)]!,
+          };
+        });
+
+      const totalAmount = itemsToCreate.reduce(
+        (acc, curr) => acc + curr.price * curr.quantity,
+        0,
+      );
+
+      // FIX: Extract status to a variable with ! assertion to satisfy exactOptionalPropertyTypes
+      const finalOrderStatus =
+        orderStatuses[Math.floor(Math.random() * orderStatuses.length)]!;
+
+      await prisma.order.create({
+        data: {
+          customerId: customer.id,
+          totalAmount,
+          shippingAddress: `${Math.floor(Math.random() * 999)} Medicine Street, Healthcare City`,
+          status: finalOrderStatus,
+          items: {
+            create: itemsToCreate,
+          },
         },
       });
     }
   }
 
-  console.log("✅ Seeding complete! Check your UI for variety.");
+  // 7. Reviews
+  const reviewComments = [
+    "Very effective medicine, felt better in 2 days.",
+    "Fast delivery and genuine product.",
+    "Good price compared to local pharmacies.",
+    "Will order again, very reliable seller.",
+  ];
+
+  for (const medicine of allMedicines) {
+    const reviewCount = Math.floor(Math.random() * 4) + 1;
+    for (let k = 0; k < reviewCount; k++) {
+      // FIX: Added ! assertion
+      const randomCustomer =
+        customers[Math.floor(Math.random() * customers.length)]!;
+
+      await prisma.review.create({
+        data: {
+          rating: Math.floor(Math.random() * 2) + 4,
+          comment:
+            reviewComments[Math.floor(Math.random() * reviewComments.length)]!,
+          userId: randomCustomer.id,
+          medicineId: medicine.id,
+          status: STATUS.ACTIVE,
+        },
+      });
+    }
+  }
+
+  console.log("✅ Seeding complete!");
 }
 
 main()
