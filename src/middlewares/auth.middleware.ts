@@ -84,7 +84,7 @@ export const authorize =
   };
 
 export const authorizeOwner =
-  (model: "medicine") =>
+  (model: "medicine" | "review") =>
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       const user = req.user!;
@@ -99,15 +99,24 @@ export const authorizeOwner =
         return next();
       }
 
-      const resource = await prisma[model].findUnique({
-        where: { id: resourceId as string },
+      // 1. Resolve ownership field mapping
+      const ownerFieldMap: Record<string, string> = {
+        medicine: "seller_id",
+        review: "userId",
+      };
+      const ownerField = ownerFieldMap[model];
+
+      // 2. Fix "Not Callable" by using type casting or specific check
+      const resource = await (prisma[model] as any).findUnique({
+        where: { id: resourceId },
       });
 
       if (!resource) {
         throw new ApiError(404, `${model} not found`);
       }
 
-      if (resource["seller_id"] !== user.id) {
+      // 3. Check ownership
+      if (resource[ownerField!] !== user.id) {
         throw new ApiError(
           403,
           `You do not have permission to access this ${model}`,

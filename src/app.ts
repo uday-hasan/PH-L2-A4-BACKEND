@@ -13,6 +13,7 @@ import categoryRouter from "./modules/category/category.route";
 import userRouter from "./modules/user/user.route";
 import orderRouter from "./modules/order/order.route";
 import cartRouter from "./modules/cart/cart.route";
+import reviewRouter from "./modules/review/review.router";
 
 const app: Application = express();
 app.use(
@@ -38,6 +39,7 @@ app.use(routeName("category"), categoryRouter);
 app.use(routeName("users"), userRouter);
 app.use(routeName("orders"), orderRouter);
 app.use(routeName("cart"), cartRouter);
+app.use(routeName("review"), reviewRouter);
 
 app.use(errorHandler);
 export default app;

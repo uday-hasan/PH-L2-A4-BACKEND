@@ -20,17 +20,6 @@ model OrderItem {
   order      Order    @relation(fields: [orderId], references: [id])
 }
 
-model Review {
-  id         String   @id @default(uuid())
-  rating     Int
-  comment    String?
-  customerId String
-  medicineId String
-  createdAt  DateTime @default(now())
-  customer   User     @relation(fields: [customerId], references: [id])
-  medicine   Medicine @relation(fields: [medicineId], references: [id])
-}
-
 enum ORDER_STATUS {
   PENDING
   SHIPPED

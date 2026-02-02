@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE "Review" ADD COLUMN     "status" "STATUS" NOT NULL DEFAULT 'ACTIVE';

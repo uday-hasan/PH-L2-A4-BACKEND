@@ -73,7 +73,7 @@ class MedicineService {
   }) {
     const { user, status, search, category_id, page, limit } = params;
     const skip = (page - 1) * limit;
-    console.log(user);
+
     const where: any = {
       ...(user?.userType === "SELLER" && { seller_id: user.id }),
       ...(status && { status }),
@@ -137,6 +137,7 @@ class MedicineService {
         include: {
           category: true,
           seller: { select: { name: true, email: true } },
+          reviews: true,
         },
         orderBy: { createdAt: "desc" },
       }),
@@ -161,6 +162,11 @@ class MedicineService {
             },
           },
           category: true,
+          reviews: {
+            include: {
+              user: true,
+            },
+          },
         },
       });
       if (!medicine) {
