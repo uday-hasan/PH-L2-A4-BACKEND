@@ -1,47 +1,48 @@
 import { prisma } from "../../utils/db";
 import { ApiError } from "../../utils/api-error";
-import { CREATE_ORDER } from "../../schema/order";
 
 class OrderService {
-  async placeOrder(customerId: string, payload: CREATE_ORDER) {
+  // order.service.ts
+  async placeOrder(customerId: string, payload: { shippingAddress: string }) {
     return await prisma.$transaction(async (tx) => {
+      const cart = await tx.cart.findUnique({
+        where: { customerId },
+        include: { items: { include: { medicine: true } } },
+      });
+
+      if (!cart || cart.items.length === 0) {
+        throw new ApiError(400, "Your cart is empty");
+      }
+
       let totalAmount = 0;
       const orderItemsData = [];
 
-      for (const item of payload.items) {
-        const medicine = await tx.medicine.findUnique({
-          where: { id: item.medicineId },
-        });
+      for (const cartItem of cart.items) {
+        const medicine = cartItem.medicine;
 
-        if (!medicine || medicine.status !== "ACTIVE") {
-          throw new ApiError(
-            404,
-            `Medicine ${item.medicineId} not found or inactive`,
-          );
+        if (medicine.status !== "ACTIVE") {
+          throw new ApiError(400, `${medicine.name} is no longer available`);
         }
 
-        if (medicine.available_quantity < item.quantity) {
+        if (medicine.available_quantity < cartItem.quantity) {
           throw new ApiError(400, `Insufficient stock for ${medicine.name}`);
         }
-        totalAmount += medicine.selling_price * item.quantity;
+
+        totalAmount += medicine.selling_price * cartItem.quantity;
 
         orderItemsData.push({
-          medicineId: item.medicineId,
-          quantity: item.quantity,
+          medicineId: medicine.id,
+          quantity: cartItem.quantity,
           price: medicine.selling_price,
         });
 
         await tx.medicine.update({
-          where: { id: item.medicineId },
-          data: { available_quantity: { decrement: item.quantity } },
+          where: { id: medicine.id },
+          data: { available_quantity: { decrement: cartItem.quantity } },
         });
       }
 
-      await tx.cartItem.deleteMany({
-        where: { cart: { customerId } },
-      });
-
-      return await tx.order.create({
+      const order = await tx.order.create({
         data: {
           customerId,
           shippingAddress: payload.shippingAddress,
@@ -50,6 +51,12 @@ class OrderService {
         },
         include: { items: true },
       });
+
+      await tx.cartItem.deleteMany({
+        where: { cartId: cart.id },
+      });
+
+      return order;
     });
   }
 

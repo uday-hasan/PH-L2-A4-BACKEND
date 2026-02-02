@@ -1,16 +1,16 @@
 import { NextFunction, Request, Response } from "express";
 import OrderService from "./order.service";
-import { createOrderSchema } from "../../schema/order";
+import { placeOrderSchema } from "../../schema/order";
 import { ResponseUtil } from "../../utils/response.util";
-import { ApiError } from "../../utils/api-error";
 
 const orderService = new OrderService();
 
 class OrderController {
   async placeOrder(req: Request, res: Response, next: NextFunction) {
     try {
-      const data = createOrderSchema.safeParse(req.body);
-      if (data.error) {
+      const data = placeOrderSchema.safeParse(req.body);
+
+      if (!data.success) {
         next(data.error);
         return;
       }
