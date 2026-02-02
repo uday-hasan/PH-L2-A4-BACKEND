@@ -60,3 +60,5 @@ temp/
 *.bak
 *.old
 *.orig
+.vercel
+.env*.local
