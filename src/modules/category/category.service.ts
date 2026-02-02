@@ -46,6 +46,9 @@ class CategoryService {
           skip,
           take: limit,
           orderBy: { createdAt: "desc" },
+          include: {
+            _count: true,
+          },
         }),
       ]);
 
