@@ -1,8 +1,8 @@
 import { prisma } from "../../utils/db";
 import { ApiError } from "../../utils/api-error";
+import { ORDER_STATUS } from "../../generated/prisma/enums";
 
 class OrderService {
-  // order.service.ts
   async placeOrder(customerId: string, payload: { shippingAddress: string }) {
     return await prisma.$transaction(async (tx) => {
       const cart = await tx.cart.findUnique({
@@ -10,26 +10,20 @@ class OrderService {
         include: { items: { include: { medicine: true } } },
       });
 
-      if (!cart || cart.items.length === 0) {
+      if (!cart || cart.items.length === 0)
         throw new ApiError(400, "Your cart is empty");
-      }
 
       let totalAmount = 0;
       const orderItemsData = [];
 
       for (const cartItem of cart.items) {
         const medicine = cartItem.medicine;
-
-        if (medicine.status !== "ACTIVE") {
-          throw new ApiError(400, `${medicine.name} is no longer available`);
-        }
-
-        if (medicine.available_quantity < cartItem.quantity) {
-          throw new ApiError(400, `Insufficient stock for ${medicine.name}`);
-        }
+        if (medicine.status !== "ACTIVE")
+          throw new ApiError(400, `${medicine.name} is inactive`);
+        if (medicine.available_quantity < cartItem.quantity)
+          throw new ApiError(400, `No stock for ${medicine.name}`);
 
         totalAmount += medicine.selling_price * cartItem.quantity;
-
         orderItemsData.push({
           medicineId: medicine.id,
           quantity: cartItem.quantity,
@@ -49,13 +43,9 @@ class OrderService {
           totalAmount,
           items: { create: orderItemsData },
         },
-        include: { items: true },
       });
 
-      await tx.cartItem.deleteMany({
-        where: { cartId: cart.id },
-      });
-
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
       return order;
     });
   }
@@ -68,62 +58,57 @@ class OrderService {
     });
   }
 
+  async getAllOrders() {
+    return await prisma.order.findMany({
+      include: {
+        customer: { select: { name: true, email: true } },
+        items: {
+          include: {
+            medicine: {
+              select: { name: true, seller: { select: { name: true } } },
+            },
+          },
+        },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+  }
+
+  async updateOrderStatus(orderId: string, status: ORDER_STATUS) {
+    return await prisma.order.update({
+      where: { id: orderId },
+      data: { status },
+    });
+  }
+
   async getSellerOrders(sellerId: string) {
     return await prisma.orderItem.findMany({
       where: { medicine: { seller_id: sellerId } },
       include: {
-        order: {
-          select: {
-            id: true,
-            status: true,
-            shippingAddress: true,
-            createdAt: true,
-            customer: { select: { name: true } },
-          },
-        },
         medicine: true,
+        order: {
+          include: { customer: { select: { name: true, email: true } } },
+        },
       },
       orderBy: { order: { createdAt: "desc" } },
     });
   }
 
-  async updateOrderStatus(orderId: string, status: any) {
-    try {
-      return await prisma.order.update({
-        where: { id: orderId },
-        data: { status },
-      });
-    } catch (error) {
-      throw new ApiError(400, "Could not update order status");
-    }
-  }
-  async getAllOrders() {
-    try {
-      return await prisma.order.findMany({
-        include: {
-          customer: {
-            select: {
-              id: true,
-              name: true,
-              email: true,
-            },
-          },
-          items: {
-            include: {
-              medicine: {
-                select: {
-                  name: true,
-                  seller: { select: { name: true } },
-                },
-              },
-            },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      });
-    } catch (error) {
-      throw new ApiError(500, "Failed to fetch all orders", error);
-    }
+  async updateOrderItemStatus(
+    sellerId: string,
+    orderItemId: string,
+    status: ORDER_STATUS,
+  ) {
+    const item = await prisma.orderItem.findFirst({
+      where: { id: orderItemId, medicine: { seller_id: sellerId } },
+    });
+
+    if (!item) throw new ApiError(403, "You don't own this product");
+
+    return await prisma.orderItem.update({
+      where: { id: orderItemId },
+      data: { status },
+    });
   }
 }
 

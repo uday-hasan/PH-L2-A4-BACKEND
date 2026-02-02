@@ -11,13 +11,14 @@ model Order {
 }
 
 model OrderItem {
-  id         String   @id @default(uuid())
+  id         String       @id @default(uuid())
   orderId    String
   medicineId String
   quantity   Int
   price      Float
-  medicine   Medicine @relation(fields: [medicineId], references: [id])
-  order      Order    @relation(fields: [orderId], references: [id])
+  status     ORDER_STATUS @default(PENDING)
+  medicine   Medicine     @relation(fields: [medicineId], references: [id])
+  order      Order        @relation(fields: [orderId], references: [id])
 }
 
 enum ORDER_STATUS {

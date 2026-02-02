@@ -89,6 +89,13 @@ class AuthService {
         omit: {
           password: true,
         },
+        include: {
+          _count: {
+            select: {
+              orders: true,
+            },
+          },
+        },
       });
 
       if (!user) {

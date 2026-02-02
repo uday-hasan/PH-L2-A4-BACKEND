@@ -11,6 +11,12 @@ orderRouter.get(
   authorize(["ADMIN"]),
   orderController.getAllOrders,
 );
+orderRouter.patch(
+  "/admin/status/:orderId",
+  authenticate,
+  authorize(["ADMIN"]),
+  orderController.updateStatus,
+);
 
 orderRouter.post(
   "/",
@@ -32,10 +38,10 @@ orderRouter.get(
   orderController.getIncomingOrders,
 );
 orderRouter.patch(
-  "/status/:orderId",
+  "/item-status/:orderItemId",
   authenticate,
-  authorize(["SELLER", "ADMIN"]),
-  orderController.updateStatus,
+  authorize(["SELLER"]),
+  orderController.updateOrderItemStatus,
 );
 
 export default orderRouter;

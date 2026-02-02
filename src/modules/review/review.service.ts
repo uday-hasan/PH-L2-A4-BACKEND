@@ -6,6 +6,23 @@ class ReviewService {
   async addReview(userId: string, payload: CREATE_REVIEW) {
     const { medicineId, rating, comment } = payload;
 
+    const deliveredOrder = await prisma.order.findFirst({
+      where: {
+        customerId: userId,
+        status: "DELIVERED",
+        items: {
+          some: { medicineId: payload.medicineId },
+        },
+      },
+    });
+
+    if (!deliveredOrder) {
+      throw new ApiError(
+        403,
+        "You can only review medicines you have purchased and received.",
+      );
+    }
+
     const medicine = await prisma.medicine.findUnique({
       where: { id: medicineId },
     });

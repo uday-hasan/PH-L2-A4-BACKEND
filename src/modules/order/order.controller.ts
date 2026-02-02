@@ -9,13 +9,9 @@ class OrderController {
   async placeOrder(req: Request, res: Response, next: NextFunction) {
     try {
       const data = placeOrderSchema.safeParse(req.body);
-
-      if (!data.success) {
-        next(data.error);
-        return;
-      }
+      if (!data.success) return next(data.error);
       const result = await orderService.placeOrder(req.user!.id, data.data);
-      ResponseUtil.success(res, result, "Order placed successfully (COD)");
+      ResponseUtil.success(res, result, "Order placed successfully");
     } catch (error) {
       next(error);
     }
@@ -24,7 +20,7 @@ class OrderController {
   async getMyOrders(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await orderService.getCustomerOrders(req.user!.id);
-      ResponseUtil.success(res, result, "Orders fetched successfully");
+      ResponseUtil.success(res, result, "Orders fetched");
     } catch (error) {
       next(error);
     }
@@ -33,7 +29,22 @@ class OrderController {
   async getIncomingOrders(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await orderService.getSellerOrders(req.user!.id);
-      ResponseUtil.success(res, result, "Incoming orders fetched");
+      ResponseUtil.success(res, result, "Seller items fetched");
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async updateOrderItemStatus(req: Request, res: Response, next: NextFunction) {
+    try {
+      const { orderItemId } = req.params;
+      const { status } = req.body;
+      const result = await orderService.updateOrderItemStatus(
+        req.user!.id,
+        orderItemId as string,
+        status,
+      );
+      ResponseUtil.success(res, result, "Item status updated");
     } catch (error) {
       next(error);
     }
@@ -41,10 +52,13 @@ class OrderController {
 
   async updateStatus(req: Request, res: Response, next: NextFunction) {
     try {
-      const orderId = req.params.orderId as string;
+      const { orderId } = req.params;
       const { status } = req.body;
-      const result = await orderService.updateOrderStatus(orderId, status);
-      ResponseUtil.success(res, result, "Order status updated");
+      const result = await orderService.updateOrderStatus(
+        orderId as string,
+        status,
+      );
+      ResponseUtil.success(res, result, "Global order status updated");
     } catch (error) {
       next(error);
     }
@@ -53,11 +67,7 @@ class OrderController {
   async getAllOrders(req: Request, res: Response, next: NextFunction) {
     try {
       const result = await orderService.getAllOrders();
-      return ResponseUtil.success(
-        res,
-        result,
-        "All system orders fetched successfully",
-      );
+      ResponseUtil.success(res, result, "All system orders fetched");
     } catch (error) {
       next(error);
     }
