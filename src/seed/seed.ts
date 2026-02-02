@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
-import { ORDER_STATUS, STATUS, USERTYPE } from "../generated/prisma/enums";
-import { Category, Medicine, Prisma, User } from "../generated/prisma/client";
+import { ORDER_STATUS, STATUS, USERTYPE } from "@prisma/client";
+import { Category, Medicine, Prisma, User } from "@prisma/client";
 import { prisma } from "../utils/db";
 
 async function main() {

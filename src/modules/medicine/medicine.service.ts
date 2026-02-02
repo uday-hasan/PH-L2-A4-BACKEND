@@ -1,10 +1,7 @@
-import { User } from "../../generated/prisma/client";
 import { CREATE_MEDICINE } from "../../schema/medicine";
-import { LOGIN_USER, REGISTER_USER, REQUEST_USER } from "../../schema/user";
+import { REQUEST_USER } from "../../schema/user";
 import { ApiError } from "../../utils/api-error";
 import { prisma } from "../../utils/db";
-import { comparePassword, hashPassword } from "../../utils/hashing";
-import { generateAccessToken, verifyRefreshToken } from "../../utils/jwt";
 
 class MedicineService {
   async addMedicine(payload: CREATE_MEDICINE) {

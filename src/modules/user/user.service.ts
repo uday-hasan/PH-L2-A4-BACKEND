@@ -1,4 +1,4 @@
-import { Prisma } from "../../generated/prisma/client";
+import { Prisma } from "@prisma/client";
 import { LOGIN_USER, REGISTER_USER, USER } from "../../schema/user";
 import { ApiError } from "../../utils/api-error";
 import { prisma } from "../../utils/db";

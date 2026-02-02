@@ -1,6 +1,6 @@
 import { prisma } from "../../utils/db";
 import { ApiError } from "../../utils/api-error";
-import { ORDER_STATUS } from "../../generated/prisma/enums";
+import { ORDER_STATUS } from "@prisma/client";
 
 class OrderService {
   async placeOrder(customerId: string, payload: { shippingAddress: string }) {
