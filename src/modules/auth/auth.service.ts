@@ -46,9 +46,6 @@ class AuthService {
         throw new ApiError(401, "Invalid password");
       }
 
-      if (!isExist) {
-        throw new ApiError(400, "User creation failed");
-      }
       const { password: _, ...user } = isExist;
       return user;
     } catch (error) {
