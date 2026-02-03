@@ -63,7 +63,6 @@ export const authorize =
         throw new ApiError(401, "User not found");
       }
 
-      // 🔥 ROLE CHECK (THIS IS WHAT YOU MISSED)
       if (!roles.includes(user.userType)) {
         throw new ApiError(
           403,
@@ -94,19 +93,16 @@ export const authorizeOwner =
         throw new ApiError(400, "Resource id is required");
       }
 
-      // Admin bypass
       if (user.userType === "ADMIN") {
         return next();
       }
 
-      // 1. Resolve ownership field mapping
       const ownerFieldMap: Record<string, string> = {
         medicine: "seller_id",
         review: "userId",
       };
       const ownerField = ownerFieldMap[model];
 
-      // 2. Fix "Not Callable" by using type casting or specific check
       const resource = await (prisma[model] as any).findUnique({
         where: { id: resourceId },
       });
@@ -115,7 +111,6 @@ export const authorizeOwner =
         throw new ApiError(404, `${model} not found`);
       }
 
-      // 3. Check ownership
       if (resource[ownerField!] !== user.id) {
         throw new ApiError(
           403,

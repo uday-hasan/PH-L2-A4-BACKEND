@@ -15,7 +15,6 @@ export class ApiError extends Error {
     this.isOperational = isOperational;
     this.details = details;
 
-    // Maintains proper stack trace (important for debugging)
     Error.captureStackTrace(this, this.constructor);
   }
 }

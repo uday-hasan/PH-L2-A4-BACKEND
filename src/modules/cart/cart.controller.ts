@@ -43,7 +43,6 @@ class CartController {
       next(error);
     }
   }
-  // cart.controller.ts
   async updateQuantity(req: Request, res: Response, next: NextFunction) {
     try {
       const { itemId } = req.params;

@@ -1,6 +1,5 @@
 import { config } from "../config/env";
 
-// Logger utility
 export const logger = {
   info: (message: string) => {
     if (config.nodeEnv === "development") {

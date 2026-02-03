@@ -10,14 +10,14 @@ interface AccessTokenPayload {
 }
 export function generateAccessToken(payload: JwtPayload): string {
   const signOptions: SignOptions = {
-    expiresIn: config.jwt.expiresIn!, // string or number
+    expiresIn: config.jwt.expiresIn!,
   };
   return jwt.sign(payload, config.jwt.secret, signOptions);
 }
 
 export function generateRefreshToken(payload: JwtPayload): string {
   const signOptions: SignOptions = {
-    expiresIn: config.jwt.refreshExpiresIn!, // string or number
+    expiresIn: config.jwt.refreshExpiresIn!,
   };
   return jwt.sign(payload, config.jwt.refreshSecret as Secret, signOptions);
 }
