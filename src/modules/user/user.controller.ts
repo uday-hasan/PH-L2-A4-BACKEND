@@ -11,7 +11,18 @@ import { generateAccessToken, generateRefreshToken } from "../../utils/jwt";
 
 const authService = new AuthService();
 class USERController {
-  // user.controller.ts
+  async getSuppliers(req: Request, res: Response, next: NextFunction) {
+    try {
+      const result = await authService.getSuppliers();
+      return ResponseUtil.success(
+        res,
+        result,
+        "Suppliers fetched successfully",
+      );
+    } catch (error) {
+      next(error);
+    }
+  }
   async getUsers(req: Request, res: Response, next: NextFunction) {
     try {
       const page = parseInt(req.query.page as string) || 1;

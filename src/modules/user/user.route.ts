@@ -30,5 +30,5 @@ userRouter.put(
 
   userController.updateUser,
 );
-
+userRouter.get("/public/suppliers", rateLimiter, userController.getSuppliers);
 export default userRouter;

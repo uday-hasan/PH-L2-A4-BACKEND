@@ -69,8 +69,13 @@ class MedicineController {
       const limit = parseInt(req.query.limit as string) || 8;
       const search = req.query.search as string;
       const category_id = req.query.category_id as string;
-      const seller_id = (req.query?.seller as string) || undefined;
-
+      const seller_id = (req.query?.seller_id as string) || undefined;
+      const minPrice = req.query.minPrice
+        ? parseFloat(req.query.minPrice as string)
+        : undefined;
+      const maxPrice = req.query.maxPrice
+        ? parseFloat(req.query.maxPrice as string)
+        : undefined;
       const status =
         (req.query.status as string) || (req.user ? undefined : "ACTIVE");
 
@@ -81,6 +86,8 @@ class MedicineController {
         category_id,
         page,
         limit,
+        minPrice,
+        maxPrice,
       });
       return ResponseUtil.success(res, result, "Fetched successfully");
     } catch (error) {

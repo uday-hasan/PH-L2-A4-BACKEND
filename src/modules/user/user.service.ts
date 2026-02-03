@@ -4,6 +4,24 @@ import { ApiError } from "../../utils/api-error";
 import { prisma } from "../../utils/db";
 
 class UserService {
+  async getSuppliers() {
+    try {
+      return await prisma.user.findMany({
+        where: {
+          userType: "SELLER",
+          status: "ACTIVE",
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+        },
+        orderBy: { name: "asc" },
+      });
+    } catch (error) {
+      throw new ApiError(500, "Failed to fetch suppliers");
+    }
+  }
   async getUsers(params: {
     status?: "ACTIVE" | "INACTIVE" | undefined;
     page: number;

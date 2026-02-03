@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { CREATE_MEDICINE } from "../../schema/medicine";
 import { REQUEST_USER } from "../../schema/user";
 import { ApiError } from "../../utils/api-error";
@@ -109,20 +110,51 @@ class MedicineService {
     category_id?: string;
     page: number;
     limit: number;
+    minPrice?: number | undefined;
+    maxPrice?: number | undefined;
   }) {
-    const { seller_id, status, search, category_id, page, limit } = params;
+    const {
+      seller_id,
+      maxPrice,
+      minPrice,
+      status,
+      search,
+      category_id,
+      page,
+      limit,
+    } = params;
     const skip = (page - 1) * limit;
 
-    const where: any = {
-      ...(seller_id && { seller_id }),
+    const where: Prisma.MedicineWhereInput = {
       ...(status && { status }),
       ...(category_id && { category_id }),
-      ...(search && {
-        OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { description: { contains: search, mode: "insensitive" } },
-        ],
-      }),
+      ...(seller_id && { seller_id }),
+      ...(minPrice !== undefined || maxPrice !== undefined
+        ? {
+            selling_price: {
+              ...(minPrice !== undefined && { gte: minPrice }),
+              ...(maxPrice !== undefined && { lte: maxPrice }),
+            },
+          }
+        : {}),
+      ...(search
+        ? {
+            OR: [
+              {
+                name: {
+                  contains: search,
+                  mode: "insensitive" as Prisma.QueryMode,
+                },
+              },
+              {
+                description: {
+                  contains: search,
+                  mode: "insensitive" as Prisma.QueryMode,
+                },
+              },
+            ],
+          }
+        : {}),
     };
 
     const [total, medicines] = await Promise.all([

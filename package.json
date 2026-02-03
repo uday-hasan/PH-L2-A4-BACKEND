@@ -6,7 +6,8 @@
   "scripts": {
     "build": "prisma generate && tsc",
     "vercel-build": "prisma generate && tsc",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "dev": "tsx watch src/server.ts"
   },
   "keywords": [],
   "author": "",
