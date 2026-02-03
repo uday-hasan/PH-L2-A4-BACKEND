@@ -68,9 +68,8 @@ class AuthController {
   refresh = async (req: Request, res: Response, next: NextFunction) => {
     try {
       const refreshToken = req.cookies.refreshToken;
-      const user = req.user;
 
-      if (!refreshToken && !user) {
+      if (!refreshToken) {
         ResponseUtil.error(res, "Refresh token required", 401);
         return;
       }

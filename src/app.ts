@@ -27,7 +27,10 @@ app.use(rateLimiter);
 
 const routeName = (path: string) => `${API_PREFIX}/${path}`;
 
-app.get(routeName("/health"), (_req: Request, res: Response) => {
+app.get(routeName("health"), (_req: Request, res: Response) => {
+  res.send("API is up and running!");
+});
+app.get("/", (_req: Request, res: Response) => {
   res.send("API is up and running!");
 });
 
